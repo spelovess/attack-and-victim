@@ -1,0 +1,36 @@
+- config:
+    - testset: "huwang"
+
+
+- test:
+    - group: "admin_check_gwgjsq-status"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "admin_check_gwgjsq-status"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "admin", "password": "21232f297a57a5a743894a0e4a801fc3", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'admin'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'super_admin'}
+
+
+- test:
+   - group: "admin_check_gwgjsq-status"
+   - name: "get attacker reports"  # 获取高危攻击申请
+   - url: "/adminapi/high_risk/admin/attack_list?org_id=&apply_status=&keywords=&page=1&page_size=10"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '操作成功'}
+       - compare: {jsonpath_mini: 'data.list.0.apply_status', comparator: "eq", expected: 2}
+       - compare: {jsonpath_mini: 'data.list.1.apply_status', comparator: "eq", expected: 3}
+
+

@@ -1,0 +1,77 @@
+- config:
+   - testset: "huwang"
+
+- test:
+    - group: "expert-mark-report"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "expert-mark-report"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "cs_expert", "password": "0192023a7bbd73250516f069df18b500", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'cs_expert'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'expert'}
+
+- test:
+   - group: "expert-mark-report"
+   - name: "get attacker reports"  # 获取攻击队成绩list
+   - url: "/adminapi/report/expert?type=1&key_word=&attack_type=&page=1&page_size=10&org_id=&org_dst_id=&others=0"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取列表成功'}
+   - extract_binds:
+       - 'attacker_report_id0': {'jmespath': "data.list[0].id"}
+
+
+- test:
+   - group: "expert-mark-report"
+   - name: "score attacker report by id 1"  # 打分通过
+   - url: {'template': "/adminapi/score/expert/$attacker_report_id0"}
+   - method: "POST"
+   - body: '{"comments": "comments", "level": 5, "score": 524, "intranet": 1}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+- test:
+   - group: "expert-mark-report"
+   - name: "get victimer reports"  # 获取防守队成绩list
+   - url: "/adminapi/report/expert?type=2&page=1&page_size=10&org_id=&status=&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取列表成功'}
+   - extract_binds:
+       - 'victimer_report_id0': {'jmespath': "data.list[0].id"}
+
+- test:
+   - group: "expert-mark-report"
+   - name: "score victimer report by id 3"  # 打分驳回
+   - url: {'template': "/adminapi/score/expert/$victimer_report_id0"}
+   - method: "POST"
+   - body: '{"comments": "comments", "status": 6}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+- test:
+    - group: "expert-mark-report"
+    - name: "expert logout"  # 登出
+    - url: "/adminapi/logout"
+    - method: "POST"
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}

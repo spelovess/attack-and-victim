@@ -1,0 +1,50 @@
+- config:
+    - testset: "huwang"
+
+
+- test:
+    - group: "admin-check-result"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "admin-check-result"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "admin", "password": "21232f297a57a5a743894a0e4a801fc3", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'admin'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'super_admin'}
+
+- test:
+   - group: "admin-check-result"
+   - name: "verify victim status"  #检查防守方成绩状态
+   - url: "/adminapi/report/admin?type=2&page=1&page_size=10&org_id=&status=&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200]
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: 'eq', expected: 0}
+       - compare: {jsonpath_mini: 'data.list.0.status', comparator: 'eq', expected: 6}
+
+
+- test:
+   - group: "admin-check-result"
+   - name: "verify attack status"  #检查攻击方成绩状态
+   - url: "/adminapi/report/admin?type=1&page=1&page_size=10&org_id=&org_dst_id=&attack_type=&status=&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200]
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: 'eq', expected: 0}
+       - compare: {jsonpath_mini: 'data.list.0.status', comparator: 'eq', expected: 5}
+
+- test:
+    - group: "admin-check-result"
+    - name: "judge logout"  # 登出
+    - url: "/adminapi/logout"
+    - method: "POST"
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}

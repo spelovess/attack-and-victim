@@ -1,0 +1,57 @@
+- config:
+    - testset: "huwang"
+
+
+- test:
+    - group: "admin-delete-strategy1"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "admin-delete-strategy1"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "admin", "password": "21232f297a57a5a743894a0e4a801fc3", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'admin'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'super_admin'}
+
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "get strategy 1"  # 获取策略列表
+   - url: "/adminapi/strategy/list?page=1&page_size=10&switch=&key_word="
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'data.list.0.name', comparator: "eq", expected: "策略一"}
+
+   - extract_binds:
+       - 'strategy_ids': {'jmespath': 'data.list[*].id'}
+
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "delete strategy 1"  # 删除策略
+   - url: "/adminapi/strategy/delete"
+   - method: "DELETE"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"ids": $strategy_ids}'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+
+
+- test:
+    - group: "admin-delete-strategy1"
+    - name: "judge logout"  # 登出
+    - url: "/adminapi/logout"
+    - method: "POST"
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}

@@ -1,0 +1,407 @@
+- config:
+    - testset: "huwang"
+
+- test:
+    - group: "delete report"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "delete report"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "cs_expert", "password": "e64b78fc3bc91bcbc7dc232ba8ec59e0", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'cs_expert'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'expert'}
+
+
+- test:
+   - group: "delete report"
+   - name: "get report"  # 获取攻击队伍已审核成绩
+   - url: "/adminapi/report/expert?type=1&page=1&page_size=10&org_id=&org_dst_id=&attack_type=&status=4&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取列表成功'}
+   - extract_binds:
+       - 'org_id0': {'jmespath': 'data.list[0].id'}
+       - 'org_id1': {'jmespath': 'data.list[1].id'}
+       - 'org_id2': {'jmespath': 'data.list[2].id'}
+
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 打分驳回
+   - url: {'template': "/adminapi/score/expert/$org_id0"}
+   - method: "POST"
+   - body: '{"comments": "comments", "status": 6}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 打分驳回
+   - url: {'template': "/adminapi/score/expert/$org_id1"}
+   - method: "POST"
+   - body: '{"comments": "comments", "status": 6}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 打分驳回
+   - url: {'template': "/adminapi/score/expert/$org_id2"}
+   - method: "POST"
+   - body: '{"comments": "comments", "status": 6}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+
+- test:
+   - group: "delete report"
+   - name: "get report"  # 获取防守队伍已审核成绩
+   - url: "/adminapi/report/expert?type=2&page=1&page_size=10&org_id=&status=4&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取列表成功'}
+   - extract_binds:
+       - 'org_id0': {'jmespath': 'data.list[0].id'}
+       - 'org_id1': {'jmespath': 'data.list[1].id'}
+       - 'org_id2': {'jmespath': 'data.list[2].id'}
+
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 打分驳回
+   - url: {'template': "/adminapi/score/expert/$org_id0"}
+   - method: "POST"
+   - body: '{"comments": "comments", "status": 6}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 打分驳回
+   - url: {'template': "/adminapi/score/expert/$org_id1"}
+   - method: "POST"
+   - body: '{"comments": "comments", "status": 6}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 打分驳回
+   - url: {'template': "/adminapi/score/expert/$org_id2"}
+   - method: "POST"
+   - body: '{"comments": "comments", "status": 6}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+- test:
+    - group: "judge-mark-report"
+    - name: "judge logout"  # 登出
+    - url: "/adminapi/logout"
+    - method: "POST"
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+
+- test:
+    - group: "delete report"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "delete report"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "admin", "password": "21232f297a57a5a743894a0e4a801fc3", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'admin'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'super_admin'}
+
+- test:
+    - group: "delete report"
+    - name: "login"  # 重置基础设置
+    - url: "/adminapi/reset-base-config"
+    - method: "POST"
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+
+- test:
+    - group: "delete report"
+    - name: "login"  # 重置高级设置
+    - url: "/adminapi/reset-advance-config"
+    - method: "POST"
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+- test:
+    - group: "delete report"
+    - name: "login"  # 获取高危攻击列表
+    - url: "/adminapi/high_risk/admin/attack_list?org_id=&apply_status=&keywords=&page=1&page_size=10"
+    - method: "GET"
+    - expected_status: [200]
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+    - extract_binds:
+        - 'apply_id0': {'jmespath': 'data.list[0].apply_id'}
+        - 'apply_id1': {'jmespath': 'data.list[1].apply_id'}
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 删除高危攻击申请
+   - url: "/adminapi/high_risk/admin/delete_highrisk"
+   - method: "POST"
+   - body: {'template': '{"del_list" : [$apply_id0]}'}
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '操作成功'}
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 删除高危攻击申请
+   - url: "/adminapi/high_risk/admin/delete_highrisk"
+   - method: "POST"
+   - body: {'template': '{"del_list" : [$apply_id1]}'}
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '操作成功'}
+
+
+- test:
+    - group: "delete report"
+    - name: "login"  # 获取防守队伍成绩
+    - url: "/adminapi/report/admin?type=2&page=1&page_size=10&org_id=&status=&key_word=&others=0"
+    - method: "GET"
+    - expected_status: [200]
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+    - extract_binds:
+        - 'victim_ids': {'jmespath': 'data.list[*].id'}
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 删除防守队伍成绩
+   - url: "/adminapi/report/admin_del"
+   - method: "POST"
+   - body: {'template': '{"ids" : $victim_ids}'}
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '成绩删除成功'}
+
+
+- test:
+    - group: "delete report"
+    - name: "login"  # 获取攻击队伍成绩
+    - url: "/adminapi/report/admin?type=1&page=1&page_size=10&org_id=&org_dst_id=&attack_type=&status=&key_word=&others=0"
+    - method: "GET"
+    - expected_status: [200]
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+    - extract_binds:
+        - 'attack_ids': {'jmespath': 'data.list[*].id'}
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 删除攻击队伍成绩
+   - url: "/adminapi/report/admin_del"
+   - method: "POST"
+   - body: {'template': '{"ids" : $attack_ids}'}
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '成绩删除成功'}
+
+- test:
+    - group: "delete report"
+    - name: "login"  # 获取出口ip
+    - url: "/adminapi/out-ip?page=1&pageSize=10&search=&type="
+    - method: "GET"
+    - expected_status: [200]
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+    - extract_binds:
+        - 'out_ips': {'jmespath': 'data.list[*].ip'}
+
+- test:
+   - group: "delete report"
+   - name: "deny report"  # 批量释放ip
+   - url: "/adminapi/out-ip/release"
+   - method: "POST"
+   - body: {'template': '{"ips" : $out_ips}'}
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: 'ok'}
+
+- test:
+    - group: "delete report"
+    - name: "deny report"  # 批量删除ip
+    - url: "/adminapi/out-ip/delete"
+    - method: "DELETE"
+    - body: {'template': '{"ips" : $out_ips}'}
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - expected_status: [200] #期待的返回码
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'info', comparator: "eq", expected: 'ok'}
+
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "get strategy 1"  # 获取策略列表
+   - url: "/adminapi/strategy/list?page=1&page_size=10&switch=&key_word="
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+   - extract_binds:
+       - 'strategy_ids': {'jmespath': 'data.list[*].id'}
+
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "delete strategy 1"  # 删除策略
+   - url: "/adminapi/strategy/delete"
+   - method: "DELETE"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"ids": $strategy_ids}'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "get strategy 1"  # 获取用户列表
+   - url: "/adminapi/all-users?role=&valid=&org_id=&name=&page=1&page_size=10"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+   - extract_binds:
+       - 'user_ids': {'jmespath': 'data.list[*].id'}
+
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "delete strategy 1"  # 删除用户
+   - url: "/adminapi/delete-users"
+   - method: "DELETE"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"ids": $user_ids}'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "get strategy 1"  # 获取防守队伍列表
+   - url: "/adminapi/organization?type=2&key_word=&nature_id="
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+   - extract_binds:
+       - 'victimteam_ids': {'jmespath': 'data[*].id'}
+
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "delete strategy 1"  # 删除防守队伍
+   - url: "/adminapi/organization"
+   - method: "DELETE"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"ids": $victimteam_ids}'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "get strategy 1"  # 获取攻击队伍列表
+   - url: "/adminapi/organization?type=1&key_word=&nature_id="
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+   - extract_binds:
+       - 'attackteam_ids': {'jmespath': 'data[*].id'}
+
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "delete strategy 1"  # 删除攻击队伍
+   - url: "/adminapi/organization"
+   - method: "DELETE"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"ids": $attackteam_ids}'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "get strategy 1"  # 获取行业列表
+   - url: "/adminapi/department?key_word="
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+   - extract_binds:
+       - 'hy_ids': {'jmespath': 'data[*].id'}
+
+
+- test:
+   - group: "admin-delete-strategy1"
+   - name: "delete strategy 1"  # 删除行业
+   - url: "/adminapi/department"
+   - method: "DELETE"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"ids": $hy_ids}'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
