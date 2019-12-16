@@ -1,0 +1,46 @@
+- config:
+    - testset: "huwang"
+
+
+- test:
+    - group: "admin_check_koufenshengxiao"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "admin_check_koufenshengxiao"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "admin", "password": "21232f297a57a5a743894a0e4a801fc3", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'admin'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'super_admin'}
+
+- test:
+   - group: "admin_check_koufenshengxiao"
+   - name: "get attacker reports"  # 获取攻击队成绩
+   - url: "/screenapi/score"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: 'ok'}
+       - compare: {jsonpath_mini: 'data.0.score_sum', comparator: "eq", expected: 6203}
+
+- test:
+   - group: "admin_check_koufenshengxiao"
+   - name: "get victim reports"  # 获取攻击队成绩
+   - url: "/screenapi/victim-score"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: 'ok'}
+       - compare: {jsonpath_mini: 'data.0.score_sum', comparator: "eq", expected: 4154}
+
+
+

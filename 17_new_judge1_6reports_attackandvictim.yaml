@@ -1,0 +1,136 @@
+- config:
+   - testset: "huwang"
+
+- test:
+    - group: "judge1-mark-report-strategy2"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "judge1-mark-report-strategy2"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "cs_judge1", "password": "0192023a7bbd73250516f069df18b500", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'cs_judge1'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'judge'}
+ #      
+#		
+- test:
+   - group: "judge1-mark-report-strategy2"
+   - name: "get victimer reports"  # 获取防守队成绩list
+   - url: "/adminapi/report/judge?type=2&page=1&page_size=10&org_id=&status=&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取列表成功'}
+   - extract_binds:
+       - 'victimer_report_id0': {'jmespath': "data.list[0].id"}
+       - 'victimer_report_id1': {'jmespath': "data.list[1].id"}
+       - 'victimer_report_id2': {'jmespath': "data.list[2].id"}
+
+
+
+#防守方打分       
+
+- test:
+   - group: "judge1-mark-report-strategy2"
+   - name: "score victimer report by id 1"  # 通过成绩
+   - url: {'template': "/adminapi/score/judge/$victimer_report_id0"}
+   - method: "POST"
+   - body: '{"comments": "comments",  "score": 1}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+- test:
+   - group: "judge1-mark-report-strategy2"
+   - name: "score victimer report by id 1"  # 通过成绩
+   - url: {'template': "/adminapi/score/judge/$victimer_report_id1"}
+   - method: "POST"
+   - body: '{"comments": "comments",  "score": 1}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+- test:
+   - group: "judge1-mark-report-strategy2"
+   - name: "score victimer report by id 1"  # 驳回成绩
+   - url: {'template': "/adminapi/score/judge/$victimer_report_id2"}
+   - method: "POST"
+   - body: '{"comments": "comments",  "status": 6}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+# 
+#
+- test:
+   - group: "judge1-mark-report-strategy2"
+   - name: "get attacker reports"  # 获取攻击队成绩list
+   - url: "/adminapi/report/judge?type=1&page=1&page_size=10&org_id=&org_dst_id=&attack_type=&status=&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取列表成功'}
+   - extract_binds:
+       - 'attacker_report_id0': {'jmespath': 'data.list[0].id'}
+       - 'attacker_report_id1': {'jmespath': 'data.list[1].id'}
+       - 'attacker_report_id2': {'jmespath': 'data.list[2].id'}
+
+
+
+
+#攻击方打分
+- test:
+   - group: "judge1-mark-report-strategy2"
+   - name: "score attacker report by id 1"  # 通过成绩
+   - url: {'template': "/adminapi/score/judge/$attacker_report_id0"}
+   - method: "POST"
+   - body: '{"comments": "comments", "level": 1, "score": 1, "intranet": 1}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+
+
+- test:
+   - group: "judge1-mark-report-strategy2"
+   - name: "score attacker report by id 1"  # 通过成绩
+   - url: {'template': "/adminapi/score/judge/$attacker_report_id1"}
+   - method: "POST"
+   - body: '{"comments": "comments", "level": 1, "score": 1, "intranet": 1}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+
+- test:
+   - group: "judge1-mark-report-strategy2"
+   - name: "score attacker report by id 1"  # 驳回成绩
+   - url: {'template': "/adminapi/score/judge/$attacker_report_id2"}
+   - method: "POST"
+   - body: '{"comments": "comments", "status": 6}'
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '打分成功'}
+
+
+

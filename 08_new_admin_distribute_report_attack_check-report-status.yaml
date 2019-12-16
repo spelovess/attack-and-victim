@@ -1,0 +1,73 @@
+- config:
+    - testset: "huwang"
+
+- test:
+    - group: "admin-distribute-attack-report-and-check-report-status"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "admin-distribute-attack-report-and-check-report-status"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "admin", "password": "21232f297a57a5a743894a0e4a801fc3", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'admin'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'super_admin'}
+
+
+- test:
+   - group: "admin-distribute-attack-report-and-check-report-status"
+   - name: "get attacker reports"  # 判断成绩状态是否为待分配
+   - url: "/adminapi/report/admin"
+   - method: "GET"
+   - body: 'org_dst_id=&attack_type=&org_id=&key_word=&status=1&type=1&page=1&page_size=10'
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'data.list.0.status', comparator: "eq", expected: 1}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取列表成功'}
+   - extract_binds:
+       - 'attacker_report_id': {'jmespath': "data.list[0].id"}
+
+
+- test:
+   - group: "admin-distribute-attack-report-and-check-report-status"
+   - name: "get judges"  # 管理员获取可用分发的裁判
+   - url: {'template': "/adminapi/report/get_judges/$attacker_report_id"}
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取所有裁判成功'}
+   - extract_binds:
+       - 'judge_ids': {'jmespath': "data.judges_list[*].id"}
+
+
+- test:
+   - group: "admin-distribute-attack-report-and-check-report-status"
+   - name: "get attacker report by id"  # 管理员分发成绩-成功
+   - url: "adminapi/report/redistribute-judges"
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"judges_list": $judge_ids, "report_id": $attacker_report_id}'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '分配裁判成功'}
+
+
+
+- test:
+   - group: "admin-distribute-attack-report-and-check-report-status"
+   - name: "verify attack status"  #检查攻击方成绩状态
+   - url: "/adminapi/report/admin?type=1&page=1&page_size=10&org_id=&org_dst_id=&attack_type=&status=&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200]
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: 'eq', expected: 0}
+       - compare: {jsonpath_mini: 'data.list.0.status', comparator: 'eq', expected: 2}

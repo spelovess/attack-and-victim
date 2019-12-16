@@ -1,0 +1,84 @@
+- config:
+   - testset: "huwang"
+
+- test:
+    - group: "admin-create-strategy2"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "admin-create-strategy2"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "admin", "password": "21232f297a57a5a743894a0e4a801fc3", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'admin'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'super_admin'}
+
+- test:
+   - group: "admin-create-strategy2"
+   - name: "get attack team"  # 获取攻击队伍
+   - url: "/adminapi/organization?type=1&need_order=1&key_word="
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+   - extract_binds:
+       - 'att_org_ids': {'jmespath': 'data[*].id'}
+       - 'att_org_id0': {'jmespath': 'data[0].id'}
+
+- test:
+   - group: "admin-create-strategy2"
+   - name: "get victim team"  # 获取防守队伍
+   - url: "/adminapi/organization?type=2&need_order=1&key_word="
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+   - extract_binds:
+       - 'vic_org_ids': {'jmespath': 'data[*].id'}
+       - 'vic_org_id0': {'jmespath': 'data[0].id'}
+
+
+- test:
+   - group: "admin-create-strategy2"
+   - name: "get judges"  # 获取裁判
+   - url: "/adminapi/all-users?role=judge&valid=1&need_order=1"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+   - extract_binds:
+       - 'judge_ids': {'jmespath': 'data.list[*].id'}
+       - 'judge_id0': {'jmespath': 'data.list[0].id'}
+       - 'judge_id1': {'jmespath': 'data.list[1].id'}
+
+
+
+
+- test:
+   - group: "admin-create-strategy2"
+   - name: "create strategy 8"  # 创建策略,决策裁判数设置为1
+   - url: "/adminapi/strategy/create"
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"name": "策略2", "attack_orgs": [$att_org_id0], "victim_orgs": [$vic_org_id0], "judges": [$judge_id0, $judge_id1], "comment": "", "judge_num": 1, "switch": 1}'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+- test:
+   - group: "admin-create-strategy2"
+   - name: "get strategy 1"  # 获取策略列表
+   - url: "/adminapi/strategy/list?page=1&page_size=10&switch=&key_word="
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'data.list.0.name', comparator: "eq", expected: "策略2"}
+       - compare: {jsonpath_mini: 'data.list.0.judge_num', comparator: "eq", expected: 1}
+

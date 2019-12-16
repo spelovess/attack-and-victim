@@ -1,0 +1,59 @@
+
+- config:
+    - testset: "huwang"
+
+- test:
+    - group: "expert_mark_gwgjsq"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "expert_mark_gwgjsq"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "cs_expert", "password": "0192023a7bbd73250516f069df18b500", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'cs_expert'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'expert'}
+
+
+- test:
+   - group: "expert_mark_gwgjsq"
+   - name: "get attacker reports"  # 获取高危攻击申请
+   - url: "/adminapi/high_risk/expert/attack_list?org_id=&apply_status=1&keywords=&page=1&page_size=10"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '操作成功'}
+   - extract_binds:
+       - 'apply_id0': {'jmespath': 'data.list[0].apply_id'}
+       - 'apply_id1': {'jmespath': 'data.list[1].apply_id'}
+
+- test:
+   - group: "expert_mark_gwgjsq"
+   - name: "score attacker report by id"  # 通过申请
+   - url: "/adminapi/high_risk/expert"
+   - method: "POST"
+   - body: {'template': 'apply_status=2&msg=adfadf&apply_id=$apply_id0'}
+   - headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '操作成功'}
+
+- test:
+   - group: "expert_mark_gwgjsq"
+   - name: "score attacker report by id"  # 驳回申请
+   - url: "/adminapi/high_risk/expert"
+   - method: "POST"
+   - body: {'template': 'apply_status=3&msg=adfadf&apply_id=$apply_id1'}
+   - headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '操作成功'}

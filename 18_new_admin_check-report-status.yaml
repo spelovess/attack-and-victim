@@ -1,0 +1,49 @@
+- config:
+    - testset: "huwang"
+
+
+- test:
+    - group: "admin-check-result-strategy2"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "admin-check-result-strategy2"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "admin", "password": "21232f297a57a5a743894a0e4a801fc3", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'admin'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'super_admin'}
+
+- test:
+   - group: "admin-check-result-strategy2"
+   - name: "get attacker reports"  # 获取攻击队成绩
+   - url: "/adminapi/report/admin?type=1&page=1&page_size=10&org_id=&org_dst_id=&attack_type=&status=&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取列表成功'}
+       - compare: {jsonpath_mini: 'data.list.0.status', comparator: "eq", expected: 5}
+       - compare: {jsonpath_mini: 'data.list.1.status', comparator: "eq", expected: 5}
+       - compare: {jsonpath_mini: 'data.list.2.status', comparator: "eq", expected: 6}
+# 
+- test:
+   - group: "admin-check-result-strategy2"
+   - name: "get victimer reports"  # 获取防守队成绩list
+   - url: "/adminapi/report/admin?type=2&page=1&page_size=10&org_id=&status=&key_word=&others=0"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'info', comparator: "eq", expected: '获取列表成功'}
+       - compare: {jsonpath_mini: 'data.list.0.status', comparator: "eq", expected: 5}
+       - compare: {jsonpath_mini: 'data.list.1.status', comparator: "eq", expected: 5}
+       - compare: {jsonpath_mini: 'data.list.2.status', comparator: "eq", expected: 6}
+
+

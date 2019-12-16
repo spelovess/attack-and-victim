@@ -1,0 +1,196 @@
+- config:
+    - testset: "huwang"
+
+
+- test:
+    - group: "pre-configuration"
+    - name: "captcha"  # 获取验证码
+    - url: "/adminapi/captcha"
+    - method: "GET"
+
+- test:
+    - group: "pre-configuration"
+    - name: "login"  # 登录
+    - url: "/adminapi/login"
+    - method: "POST"
+    - body: '{"username": "admin", "password": "21232f297a57a5a743894a0e4a801fc3", "captcha": "dfa"}'
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.username', comparator: "eq", expected: 'admin'}
+        - compare: {jsonpath_mini: 'data.role', comparator: "eq", expected: 'super_admin'}
+
+
+- test:
+   - group: "pre-configuration"
+   - name: "create attack team"  # 创建攻击队伍
+   - url: "/adminapi/organization/attacker"
+   - method: "POST"
+   - body: 'title=测试攻击队伍&address=武汉&longitude=114.536674&nature_id=1&latitude=30.33897'
+   - expected_status: [200] #期待的返回码
+
+
+- test:
+   - group: "pre-configuration"
+   - name: "get attack team"  # 获取攻击队伍
+   - url: "/adminapi/organization?type=1&key_word=测试攻击队伍"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'data.0.title', comparator: "eq", expected: '测试攻击队伍'}
+   - extract_binds:
+       - 'org_id': {'jmespath': 'data[0].id'}
+
+       
+- test:
+   - group: "pre-configuration"
+   - name: "create attacker"  # 创建攻击人员
+   - url: "/adminapi/create-user"
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"username": "cs_attacker", "mobile": "17620334922", "name": "cs_attack", "password": "admin123", "checkPass": "admin123", "role": "attacker", "org_id": "$org_id"}'}
+   - expected_status: [200] #期待的返回码
+
+
+- test:
+    - group: "pre-configuration"
+    - name: "apply ip"  # 获取ip
+    - url: "/adminapi/out-ip/apply"
+    - method: "POST"
+    - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    - body: '{"number": 3}'
+    - expected_status: [200] #期待的返回码
+
+
+- test:
+    - group: "pre-configuration"
+    - name: "get out ip number"  # 获取未分配的ip
+    - url: "/adminapi/out-ip?page=1&pageSize=10&search=&type=3"
+    - method: "GET"
+    - expected_status: [200] #期待的返回码
+    - validators:
+        - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+        - compare: {jsonpath_mini: 'data.list.0.status', comparator: "eq", expected: 1}
+        - compare: {jsonpath_mini: 'data.list.0.type', comparator: "eq", expected: 3}
+    - extract_binds:
+        - 'outip1': {'jmespath': 'data.list[0].ip'}
+        - 'outip2': {'jmespath': 'data.list[1].ip'}
+        - 'outip3': {'jmespath': 'data.list[2].ip'}
+
+- test:
+   - group: "pre-configuration"
+   - name: "create attack team asset"  # 创建攻击队伍资源
+   - url: {'template': "/adminapi/organization-assets/$org_id"}
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"assets": [{"ip": "$outip1", "status": 1}, {"ip": "$outip2", "status": 1}, {"ip": "$outip3", "status": 1}]}'}
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+- test:
+   - group: "pre-configuration"
+   - name: "create judge 1"  # 创建裁判
+   - url: "/adminapi/create-user"
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: '{"username": "cs_judge1", "mobile": "17620334922", "name": "cs_judge1", "password": "admin123", "checkPass": "admin123", "role": "judge", "org_id": ""}'
+   - expected_status: [200] #期待的返回码
+
+
+- test:
+   - group: "pre-configuration"
+   - name: "create judge 2"  # 创建裁判
+   - url: "/adminapi/create-user"
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: '{"username": "cs_judge2", "mobile": "17620334922", "name": "cs_judge2", "password": "admin123", "checkPass": "admin123", "role": "judge", "org_id": ""}'
+   - expected_status: [200] #期待的返回码
+
+
+- test:
+   - group: "pre-configuration"
+   - name: "create expert"  # 创建专家
+   - url: "/adminapi/create-user"
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: '{"username": "cs_expert", "mobile": "17620334922", "name": "cs_expert", "password": "admin123", "checkPass": "admin123", "role": "expert", "org_id": ""}'
+   - expected_status: [200] #期待的返回码
+
+
+- test:
+   - group: "pre-configuration"
+   - name: "set config"  # 设置基础设置
+   - url: "/adminapi/set-base-config"
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: '{"project_name": "实战攻防演习", "judge_number": "2", "system_name": "实战攻防演习平台"}'
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+- test:
+   - group: "pre-configuration"
+   - name: "set config"  # 设置演习高级设置
+   - url: "/adminapi/set-advance-config"
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: '{"is_judged": 1,"is_mangda":0,"is_pause":0,"time_durating":[]}'
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+
+- test:
+   - group: "pre-configuration"
+   - name: "create department"  # 创建行业
+   - url: "/adminapi/department"
+   - method: "POST"
+   - body: 'name=测试行业'
+   - expected_status: [200] #期待的返回码
+
+
+- test:
+   - group: "pre-configuration"
+   - name: "get department"  # 获取行业
+   - url: "/adminapi/department"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+   - extract_binds:
+       - 'dep_id': {'jmespath': 'data[0].id'}
+
+
+- test:
+   - group: "pre-configuration"
+   - name: "create victim team"  # 创建防守队伍
+   - url: "/adminapi/organization/victim"
+   - method: "POST"
+   - body: {'template': 'title=测试防守队伍&address=武汉&province=420000&city=420100&longitude=114.536674&latitude=30.33897&department_id=$dep_id&nature_id=2'}
+   - expected_status: [200] #期待的返回码
+  
+
+- test:
+   - group: "pre-configuration"
+   - name: "get victim team"  # 获取防守队伍
+   - url: "/adminapi/organization?type=2&key_word=测试防守队伍"
+   - method: "GET"
+   - expected_status: [200] #期待的返回码
+   - validators:
+       - compare: {jsonpath_mini: 'code', comparator: "eq", expected: 0}
+       - compare: {jsonpath_mini: 'data.0.title', comparator: "eq", expected: '测试防守队伍'}
+   - extract_binds:
+       - 'org_id': {'jmespath': 'data[0].id'}
+
+- test:
+   - group: "pre-configuration"
+   - name: "create victimer"  # 创建防守人员
+   - url: "/adminapi/create-user"
+   - method: "POST"
+   - headers: {'Content-Type': 'application/json;charset=UTF-8'}
+   - body: {'template': '{"username": "cs_victim", "mobile": "17620334922", "name": "cs_victim", "password": "admin123", "checkPass": "admin123", "role": "victim", "org_id": "$org_id"}'}
+   - expected_status: [200] #期待的返回码
+
+
+
